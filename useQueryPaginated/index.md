@@ -1,0 +1,51 @@
+# useQueryPaginated
+
+Hook para facilitar o uso de uma promise paginada, dá subscribe e retorna
+o resultado junto com funções de manipulação dos parametros.
+
+## Como usar
+
+```ts
+const {
+  // extra props added by hook
+  initialParams,
+  refresh,
+  params,
+  mergeParams,
+  handleSort,
+  handleChangePage,
+  handleChangePerPage,
+  // query original response
+  ...queryResult
+} = useQueryPaginated(
+  {
+    initialParams: { page: 1, perPage: 40 }, // optional
+    queryFn: params => salesService.list(params)
+  },
+  []
+);
+```
+
+## Parâmetros e Retorno
+
+```ts
+/**
+ * @param options `UseQueryPaginatedOptions`: {
+ *  initialParams: Estado inicial dos paramêtros
+ *  queryFn: Função que recebe os paramêtros e retorna uma Promise
+ *  ...Todas as propriedades do useQuery original
+ * }
+ * @param deps React deps
+ * @returns `UseQueryPaginated`: {
+ *  params: P / Json com os parametros
+ *  initialParams: Partial<P> / Json com os parametros iniciais, útil para um reset de filtros
+ *  refresh: () => void; / Função de refresh
+ *  mergeParams: (params: PaginationMergeParams<P>) => void; / Função para atualizar os paramentros pode ser o valor em sí o uma função que recebe o valor atual
+ *  handleChangePage: (page: number) => void; / Função de atalho para o mergeParams({ page: 1})
+ *  handleChangePerPage: (perPage: number) => void; / Função de atalho para o mergeParams({ perPge: 1})
+ *  handleSort: (sortField: string, sortDirection: 'asc' | 'desc') => void; / Função de atalho para o mergeParams({ sortField, sortDirection })
+ *  ...Todas as propriedades de retorno do useQuery original
+ * }
+ */
+export default function useQueryPaginated<P extends PaginationParams, R>(options: UseQueryOptions<P, R>, , deps: React.DependencyList): UsePaginatedPromise<P, R>
+```
