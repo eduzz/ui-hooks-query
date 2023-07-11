@@ -13,7 +13,7 @@ export interface PaginationParams<D extends Record<string, any> = Record<string,
 }
 
 export interface PaginationResponse<T = unknown> {
-  total: number;
+  total?: number;
   result: T[];
 }
 
