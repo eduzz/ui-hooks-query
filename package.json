@@ -1,7 +1,7 @@
 {
   "name": "@eduzz/ui-hooks-query",
   "description": "Eduzz Hooks: React Query",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "keywords": [
     "react-query",
     "react-hooks",
