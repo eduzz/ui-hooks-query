@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { UseQueryOptions, UseQueryResult, useQuery } from '@tanstack/react-query';
-import isEqual from 'lodash-es/isEqual';
+import isEqual from 'lodash.isequal';
 
 export interface PaginationParams<D extends Record<string, any> = Record<string, any>> {
   [key: string]: any;
