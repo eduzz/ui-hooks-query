@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 
-import { UseQueryOptions, UseQueryResult, useQuery } from '@tanstack/react-query';
+import { UseQueryOptions, UseQueryResult, useQuery, useQueryClient } from '@tanstack/react-query';
 import isEqual from 'lodash.isequal';
 
 export interface PaginationParams<D extends Record<string, any> = Record<string, any>> {
@@ -53,6 +53,7 @@ export default function useQueryPaginated<P extends PaginationParams, R>(
   options: UseQueryPaginatedOptions<P, R>
 ): UseQueryPaginatedResult<P, R> {
   const firstRender = useRef(true);
+  const queryClient = useQueryClient();
 
   const { initialParams: initialParamsOption, queryFn, infintyScroll, ...queryOptions } = options;
   const [initialParams] = useState<P>(
@@ -64,15 +65,15 @@ export default function useQueryPaginated<P extends PaginationParams, R>(
       }) as P
   );
   const [params, setParams] = useState<P>(() => ({ ...initialParams }));
-  const result = useQuery({
+  const query = useQuery({
     ...queryOptions,
     queryFn: async () => {
       const sendParams = { ...params } as P & { _refresh?: number };
       delete sendParams._refresh;
       const data = await queryFn(sendParams);
 
-      const lastTotal: number = result.data?.total ?? 0;
-      const lastResult: any[] = result.data?.result ?? [];
+      const lastTotal: number = query.data?.total ?? 0;
+      const lastResult: any[] = query.data?.result ?? [];
 
       return {
         total: data.total ?? lastTotal,
@@ -83,13 +84,20 @@ export default function useQueryPaginated<P extends PaginationParams, R>(
   });
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const timeout = setTimeout(async () => {
       if (firstRender.current) {
         firstRender.current = false;
         return;
       }
 
-      result.refetch();
+      if (query.isLoading) {
+        await queryClient.cancelQueries({ queryKey: options.queryKey });
+        query.refetch();
+
+        return;
+      }
+
+      query.refetch();
     }, 0);
 
     return () => clearTimeout(timeout);
@@ -134,9 +142,9 @@ export default function useQueryPaginated<P extends PaginationParams, R>(
   );
 
   return {
-    ...result,
+    ...query,
     initialParams,
-    infinityHasMore: infintyScroll ? (result.data?.result.length ?? 0) < (result.data?.total ?? 0) : undefined,
+    infinityHasMore: infintyScroll ? (query.data?.result.length ?? 0) < (query.data?.total ?? 0) : undefined,
     refresh,
     params,
     mergeParams,
